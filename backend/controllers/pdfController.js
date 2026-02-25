@@ -39,6 +39,7 @@ export const uploadPdf = async (req, res) => {
     // Clear relevant cache
     const cacheKey = `pdf:${subject}:${className}:${school}`;
     await redis.del(cacheKey);
+    console.log(`Cache invalidated for key: ${cacheKey}`);
 
     res.status(201).json({
       success: true,
@@ -71,6 +72,7 @@ export const searchPdfs = async (req, res) => {
     // Check cache first
     const cachedData = await redis.get(cacheKey);
     if (cachedData) {
+      console.log(`Cache HIT for key: ${cacheKey}`);
       return res.status(200).json({
         success: true,
         source: 'cache',
@@ -78,13 +80,15 @@ export const searchPdfs = async (req, res) => {
       });
     }
 
+    console.log(`Cache MISS for key: ${cacheKey}`);
+    
     // Fetch from database
     const pdfs = await Pdf.find(query)
       .populate('uploadedBy', '-password')
       .sort({ createdAt: -1 });
 
-    // Store in cache with 60 seconds expiry
-    await redis.setex(cacheKey, 60, JSON.stringify(pdfs));
+    // Store in cache with 5 minutes expiry
+    await redis.setex(cacheKey, 300, JSON.stringify(pdfs));
 
     res.status(200).json({
       success: true,

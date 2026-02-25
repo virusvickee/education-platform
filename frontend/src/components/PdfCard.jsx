@@ -1,7 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const PdfCard = ({ pdf }) => {
   const [showModal, setShowModal] = useState(false);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [loading, setLoading] = useState(true);
   const closeButtonRef = useRef(null);
   const triggerRef = useRef(null);
 
@@ -53,9 +61,16 @@ const PdfCard = ({ pdf }) => {
 
   const handleClose = () => {
     setShowModal(false);
+    setPageNumber(1);
+    setLoading(true);
     if (triggerRef.current) {
       triggerRef.current.focus();
     }
+  };
+
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
+    setLoading(false);
   };
 
   const formatDate = (dateStr) => {
@@ -114,13 +129,37 @@ const PdfCard = ({ pdf }) => {
                 ×
               </button>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <iframe
-                src={`${API_BASE_URL}${pdf.fileUrl}`}
-                className="w-full h-full"
-                title="PDF Preview"
-                sandbox="allow-same-origin"
-              />
+            <div className="flex-1 overflow-auto flex flex-col items-center p-4 bg-gray-100">
+              {loading && <div className="text-gray-600">Loading PDF...</div>}
+              <Document
+                file={`${API_BASE_URL}${pdf.fileUrl}`}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={(error) => console.error('Error loading PDF:', error)}
+                loading={<div className="text-gray-600">Loading PDF...</div>}
+              >
+                <Page pageNumber={pageNumber} renderTextLayer={true} renderAnnotationLayer={true} />
+              </Document>
+              {numPages && (
+                <div className="mt-4 flex items-center gap-4 bg-white px-4 py-2 rounded-lg shadow">
+                  <button
+                    onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
+                    disabled={pageNumber <= 1}
+                    className="px-3 py-1 bg-indigo-600 text-white rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    Page {pageNumber} of {numPages}
+                  </span>
+                  <button
+                    onClick={() => setPageNumber(prev => Math.min(prev + 1, numPages))}
+                    disabled={pageNumber >= numPages}
+                    className="px-3 py-1 bg-indigo-600 text-white rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
