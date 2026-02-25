@@ -2,6 +2,38 @@
 
 A complete educational platform built with MERN stack (MongoDB, Express.js, React.js, Node.js) featuring user authentication, PDF management, search functionality, and Redis caching for optimized performance.
 
+## 📁 Project Structure
+
+```
+education-platform/
+├── backend/                 # Node.js + Express API
+│   ├── config/             # Database & Redis configuration
+│   ├── controllers/        # Business logic
+│   ├── middleware/         # Auth, upload, role middleware
+│   ├── models/             # Mongoose schemas
+│   ├── routes/             # API routes
+│   ├── uploads/            # PDF storage
+│   └── server.js           # Entry point
+│
+├── frontend/               # React + Vite application
+│   ├── src/
+│   │   ├── components/    # Reusable components
+│   │   ├── pages/         # Page components
+│   │   ├── services/      # API services
+│   │   └── App.jsx        # Main app component
+│   └── package.json
+│
+├── docs/                   # Documentation
+│   ├── DEPLOYMENT.md      # Deployment guide
+│   ├── QUICKSTART.md      # Quick setup guide
+│   └── ...
+│
+├── .gitignore
+├── README.md
+├── render.yaml            # Render deployment config
+└── vercel.json            # Vercel deployment config
+```
+
 ## 🚀 Features
 
 ### User Management
