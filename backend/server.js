@@ -30,6 +30,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Education Platform API',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth/register, /api/auth/login',
+      pdf: '/api/pdf/upload, /api/pdf/search'
+    }
+  });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/pdf', pdfRoutes);
 
