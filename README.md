@@ -15,7 +15,7 @@ This application allows:
 ## 🚀 Live Demo
 
 ### 🌐 Frontend (Vercel)
-https://education-platform-sigma-six.vercel.app/login
+https://education-platform-git-main-virusvickees-projects.vercel.app/login
 
 ### 🔗 Backend (Render)
 https://education-platform12.onrender.com/
