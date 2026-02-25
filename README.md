@@ -1,38 +1,274 @@
-# Educational Platform - Full Stack MERN Application
+# 🎓 Education Platform – MERN + Redis
 
-A complete educational platform built with MERN stack (MongoDB, Express.js, React.js, Node.js) featuring user authentication, PDF management, search functionality, and Redis caching for optimized performance.
+A full-stack educational platform built as part of a Full Stack Developer evaluation assignment.
 
-## 📁 Project Structure
+This application allows:
+
+- 🏫 Academies to upload subject PDFs with metadata
+- 👨‍🎓 Students to search and preview PDFs
+- ⚡ Redis caching for performance optimization
+- 🔐 Secure JWT-based authentication
+- 🌍 Fully deployed production setup
+
+---
+
+## 🚀 Live Demo
+
+### 🌐 Frontend (Vercel)
+https://education-platform-sigma-six.vercel.app/login
+
+### 🔗 Backend (Render)
+https://education-platform12.onrender.com/
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- Axios
+- React Router DOM
+- React-PDF
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Mongoose
+- Redis Cloud (ioredis)
+- JWT Authentication
+- bcryptjs
+- Multer (File Upload)
+
+### Deployment
+- Frontend → Vercel
+- Backend → Render
+- Database → MongoDB Atlas
+- Cache → Redis Cloud
+
+---
+
+## 🏗 Project Architecture
+
+```
+Frontend (Vercel)
+    ⬇
+Backend API (Render)
+    ⬇
+MongoDB Atlas (Database)
+    ⬇
+Redis Cloud (Caching Layer)
+```
+
+---
+
+## 🔐 Features
+
+### 1️⃣ Authentication System
+
+- User Registration (Academy / Student)
+- Login with JWT
+- Role-based authorization
+- Protected routes
+- Password hashing using bcryptjs
+
+---
+
+### 2️⃣ Academy Dashboard
+
+After login, academy users can:
+
+- Upload PDF files
+- Add metadata:
+  - Subject name
+  - Class name
+  - School name
+- View uploaded PDFs
+
+Only academy users can upload.
+
+---
+
+### 3️⃣ Student Dashboard
+
+After login, student users can:
+
+- Search PDFs by:
+  - Subject
+  - Class
+  - School
+- View results in card layout
+- Preview PDF with page navigation
+
+---
+
+### 4️⃣ Redis Caching (Performance Optimization)
+
+Redis is integrated to improve performance.
+
+**Caching Strategy:**
+
+- Search results are cached using a key format:
+  ```
+  pdf:<subject>:<className>:<school>
+  ```
+- TTL: 5 minutes (300 seconds)
+- Cache invalidation occurs when a new PDF is uploaded
+
+**Flow:**
+
+1. Student searches for PDFs
+2. Backend checks Redis
+3. If cache exists → return cached result
+4. If not → fetch from MongoDB → store in Redis → return result
+
+This reduces database load and improves response time.
+
+---
+
+## 📂 Folder Structure
 
 ```
 education-platform/
-├── backend/                 # Node.js + Express API
-│   ├── config/             # Database & Redis configuration
-│   ├── controllers/        # Business logic
-│   ├── middleware/         # Auth, upload, role middleware
-│   ├── models/             # Mongoose schemas
-│   ├── routes/             # API routes
-│   ├── uploads/            # PDF storage
-│   └── server.js           # Entry point
 │
-├── frontend/               # React + Vite application
-│   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API services
-│   │   └── App.jsx        # Main app component
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── uploads/
+│   ├── server.js
 │   └── package.json
 │
-├── docs/                   # Documentation
-│   ├── DEPLOYMENT.md      # Deployment guide
-│   ├── QUICKSTART.md      # Quick setup guide
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── vite.config.js
+│   └── package.json
+│
+├── docs/
+│   ├── DEPLOYMENT.md
+│   ├── QUICKSTART.md
 │   └── ...
 │
-├── .gitignore
-├── README.md
-├── render.yaml            # Render deployment config
-└── vercel.json            # Vercel deployment config
+└── README.md
 ```
+
+---
+
+## ⚙️ Environment Variables
+
+### Backend (.env)
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+REDIS_URL=your_redis_cloud_url
+```
+
+### Frontend (.env)
+
+```env
+VITE_API_URL=https://education-platform12.onrender.com/api
+```
+
+---
+
+## 📡 API Endpoints
+
+### 🔐 Auth
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+### 📄 PDF
+
+- `POST /api/pdf/upload` (Academy only)
+- `GET /api/pdf/search` (Authenticated)
+
+### 🩺 Health
+
+- `GET /health`
+- `GET /` (API info)
+
+---
+
+## 🔒 Security Practices
+
+- JWT-based authentication
+- Password hashing with bcryptjs
+- Role-based middleware
+- Environment variables for secrets
+- CORS configured for production
+- Input validation
+- File type validation (PDF only)
+- File size limits (10MB)
+
+---
+
+## 🚀 Deployment Process
+
+**Backend:**
+- Hosted on Render
+- Root directory: `backend`
+- Build command: `npm install`
+- Start command: `node server.js`
+- Environment variables configured
+- Node server binding to `process.env.PORT`
+
+**Frontend:**
+- Hosted on Vercel
+- Root directory: `frontend`
+- Framework: Vite
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variable `VITE_API_URL` configured
+
+---
+
+## 🧪 Testing
+
+- Postman used for API testing
+- Production URLs tested
+- Role-based access verified
+- Redis cache verified through repeated search calls
+- PDF upload and preview tested
+- Cache hit/miss logged in console
+
+---
+
+## 📌 Assignment Requirements Fulfilled
+
+✅ MERN stack used  
+✅ Two user roles implemented (Academy & Student)  
+✅ PDF upload with metadata  
+✅ Search & preview functionality with React-PDF  
+✅ Redis caching integration (5-min TTL)  
+✅ Deployed on cloud platforms  
+✅ Source code available on GitHub  
+✅ Comprehensive documentation  
+
+---
+
+## 👨‍💻 Developer
+
+**Vikas Uniyal**  
+Full Stack Developer (MERN)
+
+---
+
+## 📬 Contact
+
+For any queries regarding this project, please feel free to reach out.
+
+---
+
+## 📄 License
+
+MIT
 
 ## 🚀 Features
 
