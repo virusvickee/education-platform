@@ -54,18 +54,25 @@ cd frontend
 npm install
 ```
 
-2. **Configure API URL:**
-Edit `src/services/api.js` if your backend runs on a different port:
-```javascript
-const API_URL = 'http://localhost:5000/api';
+2. **Configure environment variables:**
+Copy `.env.example` to `.env` and configure your API URL:
+```bash
+cp .env.example .env
 ```
+
+Edit `.env`:
+```
+VITE_API_URL=http://localhost:5000/api
+```
+
+**Important:** The `.env` file is already in `.gitignore` to prevent committing sensitive values. Always commit `.env.example` with placeholder values, never commit `.env`.
 
 3. **Start development server:**
 ```bash
 npm run dev
 ```
 
-The app will run on `http://localhost:3000`
+The app will run on `http://localhost:5173` (Vite's default port, configurable in `vite.config.js`)
 
 ## Project Structure
 
@@ -189,15 +196,22 @@ npm run preview
 
 ## Environment Variables
 
-Create `.env` file if needed:
+The project uses environment variables for configuration. Copy `.env.example` to create your `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Example `.env` content:
 ```
 VITE_API_URL=http://localhost:5000/api
 ```
 
-Then update `api.js`:
-```javascript
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-```
+**Security Note:** 
+- `.env` is in `.gitignore` and should NEVER be committed
+- Always commit `.env.example` with placeholder/example values
+- Each environment (dev/staging/prod) should have its own `.env` file
+- The `api.js` file already reads from `import.meta.env.VITE_API_URL`
 
 ## Browser Support
 

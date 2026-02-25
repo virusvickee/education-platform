@@ -1,8 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 
+const getStoredUser = () => {
+  try {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : {};
+  } catch {
+    localStorage.removeItem('user');
+    return {};
+  }
+};
+
 const Navbar = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = getStoredUser();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -18,10 +28,12 @@ const Navbar = () => {
             <h1 className="text-2xl font-bold text-indigo-600">EduPlatform</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user.email}</span>
-            <span className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 capitalize">
-              {user.role}
-            </span>
+            <span className="text-sm text-gray-600">{user.email || 'Guest'}</span>
+            {user.role && (
+              <span className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 capitalize">
+                {user.role}
+              </span>
+            )}
             <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"

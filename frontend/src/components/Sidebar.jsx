@@ -1,6 +1,12 @@
 import { NavLink } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 const Sidebar = ({ role }) => {
+  if (!role || !['academy', 'student'].includes(role)) {
+    console.error('Invalid role provided to Sidebar:', role);
+    return null;
+  }
+
   return (
     <aside className="w-64 bg-white shadow-sm border-r border-gray-200 min-h-screen">
       <div className="p-6">
@@ -20,7 +26,7 @@ const Sidebar = ({ role }) => {
                   }`
                 }
               >
-                📤 Upload PDF
+                <span aria-hidden="true">📤</span> Upload PDF
               </NavLink>
             </>
           ) : (
@@ -35,7 +41,7 @@ const Sidebar = ({ role }) => {
                   }`
                 }
               >
-                🔍 Search PDFs
+                <span aria-hidden="true">🔍</span> Search PDFs
               </NavLink>
             </>
           )}
@@ -43,6 +49,10 @@ const Sidebar = ({ role }) => {
       </div>
     </aside>
   );
+};
+
+Sidebar.propTypes = {
+  role: PropTypes.oneOf(['academy', 'student']).isRequired
 };
 
 export default Sidebar;

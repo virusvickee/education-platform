@@ -16,13 +16,25 @@ const Register = () => {
 
     try {
       const { data } = await register(formData);
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('user', JSON.stringify(data.data.user));
+      const user = data?.data?.user;
+      const token = data?.data?.token;
+
+      if (!user || !token) {
+        setError('Invalid response from server');
+        return;
+      }
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       
-      if (data.data.user.role === 'academy') {
+      if (user.role === 'academy') {
         navigate('/academy');
-      } else {
+      } else if (user.role === 'student') {
         navigate('/student');
+      } else {
+        setError('Invalid user role');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -42,16 +54,17 @@ const Register = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+              <div role="alert" className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
+                id="email"
                 type="email"
                 required
                 value={formData.email}
@@ -62,10 +75,11 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
+                id="password"
                 type="password"
                 required
                 minLength={6}
@@ -84,6 +98,7 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, role: 'student' })}
+                  aria-pressed={formData.role === 'student'}
                   className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
                     formData.role === 'student'
                       ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
@@ -95,6 +110,7 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, role: 'academy' })}
+                  aria-pressed={formData.role === 'academy'}
                   className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
                     formData.role === 'academy'
                       ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
@@ -109,6 +125,8 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
+              aria-busy={loading}
+              aria-disabled={loading}
               className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? <Loader /> : 'Create Account'}

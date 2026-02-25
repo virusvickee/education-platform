@@ -4,17 +4,46 @@ import Register from './pages/Register';
 import AcademyDashboard from './pages/AcademyDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 
+// Helper to safely get user from localStorage
+const getStoredUser = () => {
+  try {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  } catch {
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
+// Public Route Component (redirects authenticated users)
+const PublicOnlyRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const user = getStoredUser();
+
+  if (token && user) {
+    const redirectPath = user.role === 'academy' ? '/academy' : user.role === 'student' ? '/student' : '/login';
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  return children;
+};
+
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = getStoredUser();
 
-  if (!token) {
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to={user.role === 'academy' ? '/academy' : '/student'} replace />;
+    if (user.role === 'academy') {
+      return <Navigate to="/academy" replace />;
+    } else if (user.role === 'student') {
+      return <Navigate to="/student" replace />;
+    }
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -22,7 +51,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
 
 function App() {
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = getStoredUser();
 
   return (
     <BrowserRouter>
@@ -30,15 +59,35 @@ function App() {
         <Route 
           path="/" 
           element={
-            token ? (
-              <Navigate to={user.role === 'academy' ? '/academy' : '/student'} replace />
+            token && user ? (
+              user.role === 'academy' ? (
+                <Navigate to="/academy" replace />
+              ) : user.role === 'student' ? (
+                <Navigate to="/student" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             ) : (
               <Navigate to="/login" replace />
             )
           } 
         />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/login" 
+          element={
+            <PublicOnlyRoute>
+              <Login />
+            </PublicOnlyRoute>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <PublicOnlyRoute>
+              <Register />
+            </PublicOnlyRoute>
+          } 
+        />
         <Route
           path="/academy"
           element={
