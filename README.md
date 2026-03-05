@@ -1,324 +1,90 @@
-# 🎓 Education Platform – MERN + Redis
+# 🎓 Education Platform – MERN + Redis + Cloudinary
 
-A full-stack educational platform built as part of a Full Stack Developer evaluation assignment.
+A full-stack educational platform with complete CRUD operations, cloud storage, and Redis caching.
 
-This application allows:
+## 🌐 Live Demo
 
-- 🏫 Academies to upload subject PDFs with metadata
-- 👨‍🎓 Students to search and preview PDFs
-- ⚡ Redis caching for performance optimization
-- 🔐 Secure JWT-based authentication
-- 🌍 Fully deployed production setup
+- **Frontend:** https://education-platform-git-main-virusvickees-projects.vercel.app/login
+- **Backend:** https://education-platform12.onrender.com/
 
 ---
 
-## 🚀 Live Demo
+## ✨ Features
 
-### 🌐 Frontend (Vercel)
-https://education-platform-git-main-virusvickees-projects.vercel.app/login
+### Authentication & Authorization
+- JWT-based authentication with 30-day token expiration
+- Role-based access control (Academy / Student)
+- Email validation and 8-character minimum password
+- Secure password hashing with bcrypt
 
-### 🔗 Backend (Render)
-https://education-platform12.onrender.com/
+### Academy Features
+- Upload PDFs with metadata (subject, class, school)
+- Edit PDF metadata (subject, className, school)
+- Delete PDFs with confirmation
+- View all uploaded PDFs
+- Ownership-based access control
+
+### Student Features
+- Search PDFs by subject, class, or school
+- Preview PDFs with page navigation
+- Responsive PDF viewer with React-PDF
+- Loading states and error handling
+
+### Performance & Storage
+- Redis caching with 5-minute TTL
+- Cloudinary cloud storage for PDFs
+- Cache invalidation on upload/update/delete
+- Automatic CDN delivery
+
+### UI/UX
+- Toast notifications for all actions
+- Loading spinners and error messages
+- Fully responsive mobile design
+- ARIA attributes and keyboard navigation
+- Confirmation dialogs for destructive actions
 
 ---
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- React (Vite)
+- React 18 with Vite
 - Tailwind CSS
 - Axios
 - React Router DOM
 - React-PDF
+- React Hot Toast
 
 ### Backend
-- Node.js
-- Express.js
-- MongoDB Atlas
-- Mongoose
-- Redis Cloud (ioredis)
+- Node.js & Express.js
+- MongoDB with Mongoose
+- Redis (ioredis)
 - JWT Authentication
+- Cloudinary
+- Multer
 - bcryptjs
-- Multer (File Upload)
 
 ### Deployment
 - Frontend → Vercel
 - Backend → Render
 - Database → MongoDB Atlas
 - Cache → Redis Cloud
+- Storage → Cloudinary
 
 ---
-
-## 🏗 Project Architecture
-
-```
-Frontend (Vercel)
-    ⬇
-Backend API (Render)
-    ⬇
-MongoDB Atlas (Database)
-    ⬇
-Redis Cloud (Caching Layer)
-```
-
----
-
-## 🔐 Features
-
-### 1️⃣ Authentication System
-
-- User Registration (Academy / Student)
-- Login with JWT
-- Role-based authorization
-- Protected routes
-- Password hashing using bcryptjs
-
----
-
-### 2️⃣ Academy Dashboard
-
-After login, academy users can:
-
-- Upload PDF files
-- Add metadata:
-  - Subject name
-  - Class name
-  - School name
-- View uploaded PDFs
-
-Only academy users can upload.
-
----
-
-### 3️⃣ Student Dashboard
-
-After login, student users can:
-
-- Search PDFs by:
-  - Subject
-  - Class
-  - School
-- View results in card layout
-- Preview PDF with page navigation
-
----
-
-### 4️⃣ Redis Caching (Performance Optimization)
-
-Redis is integrated to improve performance.
-
-**Caching Strategy:**
-
-- Search results are cached using a key format:
-  ```
-  pdf:<subject>:<className>:<school>
-  ```
-- TTL: 5 minutes (300 seconds)
-- Cache invalidation occurs when a new PDF is uploaded
-
-**Flow:**
-
-1. Student searches for PDFs
-2. Backend checks Redis
-3. If cache exists → return cached result
-4. If not → fetch from MongoDB → store in Redis → return result
-
-This reduces database load and improves response time.
-
----
-
-## 📂 Folder Structure
-
-```
-education-platform/
-│
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── uploads/
-│   ├── server.js
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── vite.config.js
-│   └── package.json
-│
-├── docs/
-│   ├── DEPLOYMENT.md
-│   ├── QUICKSTART.md
-│   └── ...
-│
-└── README.md
-```
-
----
-
-## ⚙️ Environment Variables
-
-### Backend (.env)
-
-```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-REDIS_URL=your_redis_cloud_url
-```
-
-### Frontend (.env)
-
-```env
-VITE_API_URL=https://education-platform12.onrender.com/api
-```
-
----
-
-## 📡 API Endpoints
-
-### 🔐 Auth
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-
-### 📄 PDF
-
-- `POST /api/pdf/upload` (Academy only)
-- `GET /api/pdf/search` (Authenticated)
-
-### 🩺 Health
-
-- `GET /health`
-- `GET /` (API info)
-
----
-
-## 🔒 Security Practices
-
-- JWT-based authentication
-- Password hashing with bcryptjs
-- Role-based middleware
-- Environment variables for secrets
-- CORS configured for production
-- Input validation
-- File type validation (PDF only)
-- File size limits (10MB)
-
----
-
-## 🚀 Deployment Process
-
-**Backend:**
-- Hosted on Render
-- Root directory: `backend`
-- Build command: `npm install`
-- Start command: `node server.js`
-- Environment variables configured
-- Node server binding to `process.env.PORT`
-
-**Frontend:**
-- Hosted on Vercel
-- Root directory: `frontend`
-- Framework: Vite
-- Build command: `npm run build`
-- Output directory: `dist`
-- Environment variable `VITE_API_URL` configured
-
----
-
-## 🧪 Testing
-
-- Postman used for API testing
-- Production URLs tested
-- Role-based access verified
-- Redis cache verified through repeated search calls
-- PDF upload and preview tested
-- Cache hit/miss logged in console
-
----
-
-## 📌 Assignment Requirements Fulfilled
-
-✅ MERN stack used  
-✅ Two user roles implemented (Academy & Student)  
-✅ PDF upload with metadata  
-✅ Search & preview functionality with React-PDF  
-✅ Redis caching integration (5-min TTL)  
-✅ Deployed on cloud platforms  
-✅ Source code available on GitHub  
-✅ Comprehensive documentation  
-
----
-
-## 👨‍💻 Developer
-
-**Vikas Uniyal**  
-Full Stack Developer (MERN)
-
----
-
-## 📬 Contact
-
-For any queries regarding this project, please feel free to reach out.
-
----
-
-## 📄 License
-
-MIT
-
-## 🚀 Features
-
-### User Management
-- **Two User Roles**: Academy and Student
-- **Authentication**: JWT-based secure authentication
-- **Password Security**: Bcrypt hashing
-
-### Academy Features
-- Upload PDF files with metadata (subject, class, school)
-- PDF file validation (type and size)
-- Automatic metadata management
-
-### Student Features
-- Search PDFs by subject, class name, or school
-- Advanced PDF preview with page navigation
-- Filter and view educational materials
-
-### Performance Optimization
-- **Redis Caching**: Search results cached for faster loading
-- Automatic cache invalidation on new uploads
-- Cache hit/miss tracking
-
-## 🛠️ Tech Stack
-
-**Frontend:**
-- React 18 with Vite
-- React Router for navigation
-- Axios for API calls
-- TailwindCSS for styling
-- React-PDF for PDF viewing
-
-**Backend:**
-- Node.js & Express.js
-- MongoDB with Mongoose
-- Redis (ioredis) for caching
-- JWT for authentication
-- Multer for file uploads
-- Bcrypt for password hashing
 
 ## 📋 Prerequisites
 
-- Node.js (v16 or higher)
+- Node.js (v16+)
 - MongoDB (local or Atlas)
 - Redis (local or cloud)
-- npm or yarn
+- Cloudinary account
 
-## 🔧 Installation & Setup
+---
 
-### 1. Clone the repository
+## 🚀 Quick Start
+
+### 1. Clone Repository
 ```bash
 git clone <your-repo-url>
 cd education-platform
@@ -340,142 +106,110 @@ MONGO_URI=mongodb://localhost:27017/education-platform
 JWT_SECRET=your_secure_jwt_secret_key
 REDIS_HOST=localhost
 REDIS_PORT=6379
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 NODE_ENV=development
+```
+
+Start backend:
+```bash
+npm run dev
+# Running at http://localhost:5000
 ```
 
 ### 3. Frontend Setup
 ```bash
-cd ../frontend
+cd frontend
 npm install
 
 # Create .env file
 echo "VITE_API_URL=http://localhost:5000/api" > .env
 ```
 
-### 4. Start Services
-
-**Terminal 1 - MongoDB:**
+Start frontend:
 ```bash
-mongod
-```
-
-**Terminal 2 - Redis:**
-```bash
-redis-server
-```
-
-**Terminal 3 - Backend:**
-```bash
-cd backend
 npm run dev
+# Running at http://localhost:5173
 ```
 
-**Terminal 4 - Frontend:**
-```bash
-cd frontend
-npm run dev
-```
+### 4. Access Application
+Open http://localhost:5173 in your browser
 
-Access the application at `http://localhost:5173`
+---
 
 ## 📡 API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register new user
+- `POST /api/auth/register` - Register user (email, password min 8 chars, role)
 - `POST /api/auth/login` - Login user
 
 ### PDF Management
 - `POST /api/pdf/upload` - Upload PDF (Academy only)
 - `GET /api/pdf/search` - Search PDFs (Authenticated)
+- `GET /api/pdf/:id` - Get single PDF by ID
+- `PUT /api/pdf/:id` - Update PDF metadata (Academy only, owner)
+- `DELETE /api/pdf/:id` - Delete PDF (Academy only, owner)
 
-## 🚀 Deployment
-
-### Option 1: Render (Recommended)
-
-1. **Push code to GitHub**
-2. **Create Render account** at [render.com](https://render.com)
-3. **Create Redis instance** on Render
-4. **Create MongoDB** on MongoDB Atlas
-5. **Deploy using render.yaml**:
-   - Connect your GitHub repo
-   - Render will auto-detect `render.yaml`
-   - Set environment variables:
-     - `MONGO_URI`: Your MongoDB Atlas connection string
-     - `JWT_SECRET`: Generate a secure secret
-     - `REDIS_HOST`: Your Render Redis hostname
-     - `VITE_API_URL`: Your backend URL + /api
-
-### Option 2: Vercel
-
-1. **Backend**: Deploy to Render/Railway (Vercel doesn't support long-running processes)
-2. **Frontend**: Deploy to Vercel
-   ```bash
-   cd frontend
-   vercel --prod
-   ```
-3. Set `VITE_API_URL` environment variable in Vercel dashboard
-
-### Option 3: AWS
-
-**Backend (EC2):**
-```bash
-# SSH into EC2 instance
-sudo apt update
-sudo apt install nodejs npm mongodb redis-server
-git clone <repo>
-cd education-platform/backend
-npm install
-npm install -g pm2
-pm2 start server.js
+**Authorization Header:**
+```
+Authorization: Bearer <token>
 ```
 
-**Frontend (S3 + CloudFront):**
-```bash
-cd frontend
-npm run build
-aws s3 sync dist/ s3://your-bucket-name
-```
+---
 
-## 🔐 Environment Variables
+## 🔒 Security Features
 
-### Backend
-| Variable | Description | Example |
-|----------|-------------|---------|
-| PORT | Server port | 5000 |
-| MONGO_URI | MongoDB connection | mongodb://localhost:27017/db |
-| JWT_SECRET | JWT signing key | your_secret_key |
-| REDIS_HOST | Redis hostname | localhost |
-| REDIS_PORT | Redis port | 6379 |
-| NODE_ENV | Environment | production |
+- JWT tokens with 30-day expiration
+- Password hashing with bcrypt
+- Role-based middleware (Academy/Student)
+- Ownership verification for update/delete
+- Email format validation
+- 8-character minimum password
+- Input validation on all endpoints
+- HTTPS required in production
+- Invalid MongoDB ID handling (400 instead of 500)
 
-### Frontend
-| Variable | Description | Example |
-|----------|-------------|---------|
-| VITE_API_URL | Backend API URL | https://api.example.com/api |
+---
 
-## 📁 Project Structure
+## 🎨 User Roles & Permissions
+
+### Academy Role
+- ✅ Upload PDFs with metadata
+- ✅ Edit own PDF metadata
+- ✅ Delete own PDFs
+- ✅ View own uploaded PDFs
+- ❌ Cannot modify other users' PDFs
+
+### Student Role
+- ✅ Search PDFs by filters
+- ✅ Preview PDFs with navigation
+- ❌ Cannot upload PDFs
+- ❌ Cannot edit or delete PDFs
+
+---
+
+## 📂 Project Structure
 
 ```
 education-platform/
 ├── backend/
-│   ├── config/          # Database & Redis config
+│   ├── config/          # DB, Redis, Cloudinary config
 │   ├── controllers/     # Route controllers
 │   ├── middleware/      # Auth & upload middleware
 │   ├── models/          # Mongoose models
 │   ├── routes/          # API routes
-│   ├── uploads/         # Uploaded PDFs
 │   └── server.js        # Entry point
 ├── frontend/
 │   ├── src/
 │   │   ├── components/  # React components
 │   │   ├── pages/       # Page components
-│   │   ├── services/    # API services
-│   │   └── App.jsx      # Main app
+│   │   └── services/    # API services
 │   └── package.json
-├── render.yaml          # Render deployment
-├── vercel.json          # Vercel deployment
 └── README.md
 ```
+
+---
 
 ## 🧪 Testing
 
@@ -483,7 +217,7 @@ education-platform/
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"academy@test.com","password":"test123","role":"academy"}'
+  -d '{"email":"academy@test.com","password":"test1234","role":"academy"}'
 ```
 
 ### Upload PDF
@@ -502,35 +236,177 @@ curl http://localhost:5000/api/pdf/search?subject=Math \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
+### Update PDF
+```bash
+curl -X PUT http://localhost:5000/api/pdf/PDF_ID \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"subject":"Updated Math","className":"Grade 11"}'
+```
+
+### Delete PDF
+```bash
+curl -X DELETE http://localhost:5000/api/pdf/PDF_ID \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+---
+
 ## 🐛 Troubleshooting
 
-**MongoDB Connection Error:**
-- Ensure MongoDB is running: `sudo systemctl status mongod`
-- Check connection string in `.env`
+### MongoDB Connection Error
+```bash
+# Check if MongoDB is running
+sudo systemctl status mongod
 
-**Redis Connection Error:**
-- Ensure Redis is running: `redis-cli ping`
-- Should return `PONG`
+# Start MongoDB
+sudo systemctl start mongod
+```
 
-**PDF Upload Fails:**
+### Redis Connection Error
+```bash
+# Check if Redis is running
+redis-cli ping
+# Should return: PONG
+
+# Start Redis
+redis-server
+```
+
+### PDF Upload Fails
 - Check file size (max 10MB)
 - Ensure file is PDF format
-- Verify `uploads/` directory exists
+- Verify Cloudinary credentials in .env
 
-**CORS Errors:**
+### CORS Errors
 - Update CORS origin in `backend/server.js`
 - Ensure frontend URL is whitelisted
 
-## 📝 License
+---
+
+## 🚀 Deployment
+
+### Backend (Render)
+1. Push code to GitHub
+2. Create new Web Service on Render
+3. Connect GitHub repository
+4. Set root directory: `backend`
+5. Build command: `npm install`
+6. Start command: `node server.js`
+7. Add environment variables:
+   - `MONGO_URI`
+   - `JWT_SECRET`
+   - `REDIS_HOST`
+   - `REDIS_PORT`
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+   - `NODE_ENV=production`
+
+### Frontend (Vercel)
+1. Push code to GitHub
+2. Import project on Vercel
+3. Set root directory: `frontend`
+4. Framework: Vite
+5. Build command: `npm run build`
+6. Output directory: `dist`
+7. Add environment variable:
+   - `VITE_API_URL=https://your-backend-url.onrender.com/api`
+
+---
+
+## 📝 Environment Variables
+
+### Backend (.env)
+```env
+PORT=5000
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
+JWT_SECRET=your_secret_key_min_32_chars
+REDIS_HOST=redis-host.com
+REDIS_PORT=6379
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+NODE_ENV=production
+```
+
+### Frontend (.env)
+```env
+VITE_API_URL=https://your-backend-url.com/api
+```
+
+---
+
+## 🔄 Recent Updates
+
+### Backend Improvements
+- ✅ Complete CRUD operations for PDFs
+- ✅ Cloudinary integration for persistent storage
+- ✅ Enhanced cache invalidation
+- ✅ Invalid MongoDB ID handling (400 status)
+- ✅ Password minimum increased to 8 characters
+- ✅ Improved deletion order (DB first, then Cloudinary)
+
+### Frontend Improvements
+- ✅ Edit/Delete buttons with confirmation modals
+- ✅ Toast notifications for all actions
+- ✅ Loading spinners and error messages
+- ✅ Improved PDF preview with ARIA attributes
+- ✅ Keyboard navigation (Escape to close)
+- ✅ Null safety checks throughout
+- ✅ Fully responsive mobile design
+
+### Documentation
+- ✅ Complete API endpoint documentation
+- ✅ Detailed setup instructions
+- ✅ Testing guide with examples
+- ✅ Authorization policy clarification
+
+---
+
+## 🎯 Key Features Implemented
+
+✅ MERN stack with Redis caching  
+✅ Two user roles (Academy & Student)  
+✅ Complete CRUD operations  
+✅ PDF upload with Cloudinary storage  
+✅ Search & preview with React-PDF  
+✅ JWT authentication with role-based access  
+✅ Cache invalidation on data changes  
+✅ Responsive UI with Tailwind CSS  
+✅ Toast notifications  
+✅ Error handling and validation  
+✅ Deployed on cloud platforms  
+
+---
+
+## 📄 License
 
 MIT
 
-## 👤 Author
+---
 
-Developed as part of Full Stack Developer evaluation assignment.
+## 👨‍💻 Developer
 
-## 🔗 Links
+**Vikas Uniyal**  
+Full Stack Developer (MERN)
 
-- **Live Demo**: [Add your deployed URL]
-- **GitHub**: [Your repository URL]
-- **Documentation**: See `/backend/README.md` for API details
+---
+
+## 📬 Support
+
+For issues or questions:
+- Check the troubleshooting section
+- Review API documentation
+- Verify environment variables
+- Check browser console for errors
+
+---
+
+## 🔗 Additional Resources
+
+- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+- [Redis Cloud](https://redis.com/try-free/)
+- [Cloudinary](https://cloudinary.com/)
+- [Render](https://render.com/)
+- [Vercel](https://vercel.com/)
