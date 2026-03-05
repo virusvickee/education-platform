@@ -27,9 +27,10 @@ const StudentDashboard = () => {
       if (filters.school) params.school = filters.school;
 
       const { data } = await searchPdfs(params);
-      setPdfs(Array.isArray(data.data) ? data.data : []);
+      const pdfs = Array.isArray(data?.data) ? data.data : [];
+      setPdfs(pdfs);
       
-      if (data.data.length === 0) {
+      if (pdfs.length === 0) {
         toast('No PDFs found', { icon: '📭' });
       }
     } catch (err) {

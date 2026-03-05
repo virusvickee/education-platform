@@ -3,12 +3,15 @@ import redis from '../config/redis.js';
 import cloudinary from '../config/cloudinary.js';
 
 const clearCache = async (subject, className, school) => {
+  const s = subject || 'all';
+  const c = className || 'all';
+  const sc = school || 'all';
   const keys = [
-    `pdf:${subject}:${className}:${school}`,
+    `pdf:${s}:${c}:${sc}`,
     `pdf:all:all:all`,
-    `pdf:${subject}:all:all`,
-    `pdf:all:${className}:all`,
-    `pdf:all:all:${school}`
+    `pdf:${s}:all:all`,
+    `pdf:all:${c}:all`,
+    `pdf:all:all:${sc}`
   ];
   await Promise.all(keys.map(key => redis.del(key)));
 };
@@ -92,6 +95,9 @@ export const getPdfById = async (req, res) => {
 
     res.status(200).json({ success: true, data: pdf });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: 'Invalid PDF id' });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -123,6 +129,9 @@ export const updatePdf = async (req, res) => {
 
     res.status(200).json({ success: true, data: pdf });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: 'Invalid PDF id' });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -139,15 +148,23 @@ export const deletePdf = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to delete this PDF' });
     }
 
+    await pdf.deleteOne();
+    
     if (pdf.cloudinaryId) {
-      await cloudinary.uploader.destroy(pdf.cloudinaryId, { resource_type: 'raw' });
+      try {
+        await cloudinary.uploader.destroy(pdf.cloudinaryId, { resource_type: 'raw' });
+      } catch (cloudinaryError) {
+        console.error('Cloudinary deletion failed:', cloudinaryError);
+      }
     }
 
-    await pdf.deleteOne();
     await clearCache(pdf.subject, pdf.className, pdf.school);
 
     res.status(200).json({ success: true, message: 'PDF deleted successfully' });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: 'Invalid PDF id' });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };

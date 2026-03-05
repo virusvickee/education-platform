@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -10,9 +10,30 @@ const PdfCard = ({ pdf }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!showModal) return;
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showModal]);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
+    setLoading(false);
+    setError(null);
+  };
+
+  const onDocumentLoadError = (err) => {
+    console.error('Error loading PDF:', err);
+    setError('Failed to load PDF. Please try again.');
     setLoading(false);
   };
 
@@ -26,6 +47,7 @@ const PdfCard = ({ pdf }) => {
     setShowModal(false);
     setPageNumber(1);
     setLoading(true);
+    setError(null);
   };
 
   return (
@@ -58,14 +80,20 @@ const PdfCard = ({ pdf }) => {
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div 
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pdf-modal-title"
+          >
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">{pdf.subject}</h3>
+                <h3 id="pdf-modal-title" className="text-lg font-semibold text-gray-800">{pdf.subject}</h3>
                 <p className="text-sm text-gray-500">{pdf.className} - {pdf.school}</p>
               </div>
               <button
                 onClick={closeModal}
+                aria-label="Close dialog"
                 className="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none"
               >
                 ×
@@ -73,12 +101,18 @@ const PdfCard = ({ pdf }) => {
             </div>
             
             <div className="flex-1 overflow-auto flex flex-col items-center p-4 bg-gray-100">
-              {loading && <div className="text-gray-600 py-8">Loading PDF...</div>}
+              {error ? (
+                <div className="text-center py-8">
+                  <div className="text-red-500 text-xl mb-2">⚠️</div>
+                  <p className="text-red-600">{error}</p>
+                </div>
+              ) : loading ? (
+                <div className="text-gray-600 py-8">Loading PDF...</div>
+              ) : null}
               <Document
                 file={pdf.fileUrl}
                 onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={(error) => console.error('Error loading PDF:', error)}
-                loading={<div className="text-gray-600 py-8">Loading PDF...</div>}
+                onLoadError={onDocumentLoadError}
               >
                 <Page 
                   pageNumber={pageNumber} 
@@ -89,7 +123,7 @@ const PdfCard = ({ pdf }) => {
               </Document>
             </div>
 
-            {numPages && (
+            {numPages && !error && (
               <div className="p-4 border-t border-gray-200 bg-white flex items-center justify-between">
                 <button
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}

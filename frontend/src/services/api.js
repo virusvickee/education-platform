@@ -21,9 +21,7 @@ export const register = (data) => api.post('/auth/register', data);
 export const login = (data) => api.post('/auth/login', data);
 
 export const uploadPdf = (formData) => {
-  return api.post('/pdf/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  return api.post('/pdf/upload', formData);
 };
 
 export const searchPdfs = (params) => api.get('/pdf/search', { params });

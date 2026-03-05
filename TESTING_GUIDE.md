@@ -1,12 +1,69 @@
 # Quick Testing Guide
 
-## 🚀 Start the Application
+## 🚀 Setup and Start the Application
 
+### Prerequisites
+- Node.js (v16+)
+- MongoDB running locally or connection string
+- Redis running locally or connection string
+
+### Backend Setup
 ```bash
-# Terminal 1 - Frontend
+# Terminal 1 - Backend
+cd backend
+
+# Install dependencies
+npm install
+
+# Create .env file (if not exists)
+cp .env.example .env
+
+# Edit .env with your values:
+# PORT=5000
+# MONGO_URI=mongodb://localhost:27017/education-platform
+# JWT_SECRET=your_secret_key
+# REDIS_HOST=localhost
+# REDIS_PORT=6379
+# CLOUDINARY_CLOUD_NAME=your_cloud_name
+# CLOUDINARY_API_KEY=your_api_key
+# CLOUDINARY_API_SECRET=your_api_secret
+
+# Start backend
+npm run dev
+# Backend running at: http://localhost:5000
+```
+
+### Frontend Setup
+```bash
+# Terminal 2 - Frontend
 cd frontend
+
+# Install dependencies
+npm install
+
+# Create .env file (if not exists)
+echo "VITE_API_URL=http://localhost:5000/api" > .env
+
+# Start frontend
 npm run dev
 # Access at: http://localhost:5173
+```
+
+### Database Setup/Reset
+```bash
+# If you need to reset the database for testing:
+# Option 1: Drop the database in MongoDB
+mongosh
+use education-platform
+db.dropDatabase()
+exit
+
+# Option 2: Delete specific test users manually
+mongosh
+use education-platform
+db.users.deleteOne({email: "academy@test.com"})
+db.users.deleteOne({email: "student@test.com"})
+exit
 ```
 
 ## 🧪 Test Scenarios
@@ -16,15 +73,36 @@ npm run dev
 1. **Register as Academy**
    - Go to http://localhost:5173/register
    - Enter email: `academy@test.com`
-   - Enter password: `test123` (min 6 chars)
+   - Enter password: `test1234` (min 8 chars)
    - Select "Academy" role
    - Click "Create Account"
    - ✅ Should see success toast
    - ✅ Should redirect to /academy
 
+   **Note:** If you get "User already exists" error:
+   - Option 1: Use a different email (e.g., `academy2@test.com`)
+   - Option 2: Delete the user from database:
+     ```bash
+     mongosh
+     use education-platform
+     db.users.deleteOne({email: "academy@test.com"})
+     db.pdfs.deleteMany({uploadedBy: ObjectId("USER_ID")})
+     exit
+     ```
+
 2. **Upload PDF**
-   - Fill in: Subject, Class, School
+   - Fill in: Subject (e.g., "Mathematics"), Class (e.g., "Grade 10"), School (e.g., "ABC School")
    - Select a PDF file
+     - **Test PDF Sources:**
+       - Use any PDF file you have (max 10MB)
+       - Download sample: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf
+       - Create test PDF: Print any document to PDF
+     - **Recommended:** Standard PDF with text content, not just scanned images
+     - **File Requirements:** PDF format, ≤ 10MB, contains readable text
+     - **Edge Cases to Test:**
+       - Large file (close to 10MB limit)
+       - Image-only PDF (should upload but may not be searchable)
+       - Malformed/corrupted PDF (should fail with error)
    - Click "Upload PDF"
    - ✅ Should see success toast
    - ✅ PDF should appear in list below
@@ -50,14 +128,22 @@ npm run dev
 
 ### Scenario 2: Student User Flow
 
+**Prerequisite:** Ensure PDFs exist in the system before testing student features.
+- Option 1: Complete "Scenario 1: Academy User Flow" first to upload PDFs
+- Option 2: If you have existing PDFs in the database from previous tests, you can proceed directly
+
 1. **Register as Student**
    - Go to http://localhost:5173/register
    - Enter email: `student@test.com`
-   - Enter password: `test123`
+   - Enter password: `test1234` (min 8 chars)
    - Select "Student" role
    - Click "Create Account"
    - ✅ Should see success toast
    - ✅ Should redirect to /student
+
+   **Note:** If you get "User already exists" error:
+   - Option 1: Use a different email (e.g., `student2@test.com`)
+   - Option 2: Delete the user from database (see Scenario 1 cleanup instructions)
 
 2. **Search PDFs**
    - Enter search filters (subject/class/school)
@@ -88,11 +174,11 @@ npm run dev
 
 1. **Invalid Email**
    - Try registering with: `invalidemail`
-   - ✅ Should see error toast
+   - ✅ Should see error toast: "Please provide a valid email address"
 
 2. **Short Password**
-   - Try registering with: `12345` (5 chars)
-   - ✅ Should see error toast
+   - Try registering with: `test12` (7 chars)
+   - ✅ Should see error toast: "Password must be at least 8 characters long"
 
 3. **Wrong Login Credentials**
    - Try logging in with wrong password
@@ -133,13 +219,15 @@ npm run dev
 
 ### Error Toasts (Red)
 - ❌ "Please provide a valid email address"
-- ❌ "Password must be at least 6 characters long"
+- ❌ "Password must be at least 8 characters long"
 - ❌ "Invalid credentials"
 - ❌ "User already exists with this email"
+- ❌ "Invalid PDF id" (for malformed IDs)
 - ❌ "Upload failed"
 - ❌ "Update failed"
 - ❌ "Delete failed"
 - ❌ "Search failed"
+- ❌ "Failed to load PDF. Please try again."
 
 ### Info Toasts (Blue)
 - 📭 "No PDFs found"

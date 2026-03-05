@@ -14,7 +14,7 @@
 
 3. **Input Validation**
    - Email format validation (regex)
-   - Password minimum length (6 characters)
+   - Password minimum length (8 characters)
 
 4. **Enhanced Cache Invalidation**
    - Cache cleared on update and delete operations
@@ -68,15 +68,15 @@ curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"invalidemail","password":"test123","role":"student"}'
 
-# Short password - should fail
+# Short password - should fail (minimum 8 characters)
 curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"12345","role":"student"}'
+  -d '{"email":"test@test.com","password":"test12","role":"student"}'
 
-# Valid - should succeed
+# Valid - should succeed (8+ characters)
 curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"test123","role":"student"}'
+  -d '{"email":"test@test.com","password":"test1234","role":"student"}'
 ```
 
 ## Deployment Updates
@@ -101,12 +101,15 @@ Same as above
 ## Security Improvements
 
 1. **Authorization Checks**
-   - Users can only update/delete their own PDFs
-   - Academy role required for upload/update/delete
+   - Academy role required for upload/update/delete operations
+   - Ownership verification: Academy users can only update/delete PDFs they own
+   - No global admin permissions implemented (each Academy user manages only their own PDFs)
+   - Student role: Read-only access (search and preview PDFs only)
+   - Non-Academy users cannot upload, update, or delete any PDFs
 
 2. **Input Validation**
    - Email format validated with regex
-   - Password length enforced (minimum 6 characters)
+   - Password length enforced (minimum 8 characters)
 
 3. **Cloud Storage**
    - No local file system dependencies

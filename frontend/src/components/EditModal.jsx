@@ -4,14 +4,14 @@ const EditModal = ({ isOpen, onClose, onSave, pdf, loading }) => {
   const [formData, setFormData] = useState({ subject: '', className: '', school: '' });
 
   useEffect(() => {
-    if (pdf) {
+    if (pdf && isOpen) {
       setFormData({
         subject: pdf.subject || '',
         className: pdf.className || '',
         school: pdf.school || ''
       });
     }
-  }, [pdf]);
+  }, [pdf, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

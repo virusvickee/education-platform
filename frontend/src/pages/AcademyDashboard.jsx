@@ -28,11 +28,25 @@ const AcademyDashboard = () => {
     setLoadingPdfs(true);
     try {
       const { data } = await searchPdfs({});
-      const user = JSON.parse(localStorage.getItem('user'));
-      const myPdfs = data.data.filter(pdf => pdf.uploadedBy._id === user._id);
+      let user;
+      try {
+        const userStr = localStorage.getItem('user');
+        user = userStr ? JSON.parse(userStr) : null;
+      } catch (parseError) {
+        console.error('Failed to parse user:', parseError);
+        user = null;
+      }
+      
+      if (!user || !user._id) {
+        setPdfs([]);
+        return;
+      }
+      
+      const myPdfs = data.data.filter(pdf => pdf.uploadedBy?._id === user._id);
       setPdfs(myPdfs);
     } catch (err) {
-      toast.error('Failed to load PDFs');
+      console.error('Failed to load PDFs:', err);
+      toast.error(err.response?.data?.message || 'Failed to load PDFs');
     } finally {
       setLoadingPdfs(false);
     }
@@ -67,6 +81,12 @@ const AcademyDashboard = () => {
   };
 
   const handleEdit = async (updatedData) => {
+    if (!editModal?.pdf) {
+      toast.error('No PDF selected');
+      setActionLoading(false);
+      return;
+    }
+    
     setActionLoading(true);
     try {
       await updatePdf(editModal.pdf._id, updatedData);
@@ -81,6 +101,12 @@ const AcademyDashboard = () => {
   };
 
   const handleDelete = async () => {
+    if (!deleteModal?.pdf) {
+      toast.error('No PDF selected');
+      setActionLoading(false);
+      return;
+    }
+    
     setActionLoading(true);
     try {
       await deletePdf(deleteModal.pdf._id);

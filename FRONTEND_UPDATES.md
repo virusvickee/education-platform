@@ -193,4 +193,6 @@ All endpoints properly integrated:
 - PUT /api/pdf/:id
 - DELETE /api/pdf/:id
 
-Backend URL: https://education-platform12.onrender.com/api
+Backend URL: Configure via environment variable `VITE_API_URL`  
+Production: Set in deployment platform environment variables  
+Development: http://localhost:5000/api

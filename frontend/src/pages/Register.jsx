@@ -13,8 +13,8 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
       return;
     }
 
@@ -76,13 +76,13 @@ const Register = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password <span className="text-gray-500 text-xs">(min. 6 characters)</span>
+                Password <span className="text-gray-500 text-xs">(min. 8 characters)</span>
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  minLength={6}
+                  minLength={8}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
