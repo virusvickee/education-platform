@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ToastContainer from './components/ToastContainer';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AcademyDashboard from './pages/AcademyDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 
-// Helper to safely get user from localStorage
 const getStoredUser = () => {
   try {
     const userStr = localStorage.getItem('user');
@@ -15,7 +15,6 @@ const getStoredUser = () => {
   }
 };
 
-// Public Route Component (redirects authenticated users)
 const PublicOnlyRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const user = getStoredUser();
@@ -28,7 +27,6 @@ const PublicOnlyRoute = ({ children }) => {
   return children;
 };
 
-// Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem('token');
   const user = getStoredUser();
@@ -55,6 +53,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route 
           path="/" 

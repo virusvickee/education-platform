@@ -20,6 +20,9 @@ const pdfSchema = new mongoose.Schema({
     type: String,
     required: [true, 'File URL is required']
   },
+  cloudinaryId: {
+    type: String
+  },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -29,7 +32,6 @@ const pdfSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for faster search queries
 pdfSchema.index({ subject: 1, className: 1, school: 1 });
 
 export default mongoose.model('Pdf', pdfSchema);

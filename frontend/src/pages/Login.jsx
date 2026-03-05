@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { login } from '../services/api';
 import Loader from '../components/Loader';
 
@@ -7,12 +8,10 @@ const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -21,24 +20,27 @@ const Login = () => {
       const token = data?.data?.token;
 
       if (!user || !token) {
-        setError('Invalid response from server');
+        toast.error('Invalid response from server');
         return;
       }
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       
+      toast.success('Login successful!');
+      
       if (user.role === 'academy') {
         navigate('/academy');
       } else if (user.role === 'student') {
         navigate('/student');
       } else {
-        setError('Invalid user role');
+        toast.error('Invalid user role');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      const message = err.response?.data?.message || 'Login failed';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -48,45 +50,33 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-indigo-600 mb-2">EduPlatform</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-indigo-600 mb-2">EduPlatform</h1>
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div role="alert" className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <input
-                id="email"
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                 placeholder="you@example.com"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <input
-                  id="password"
                   type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                   placeholder="••••••••"
                 />
                 <button
@@ -102,9 +92,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              aria-busy={loading}
-              aria-disabled={loading}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
             >
               {loading ? <Loader /> : 'Sign In'}
             </button>

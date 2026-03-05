@@ -9,7 +9,6 @@ const api = axios.create({
   }
 });
 
-// Add token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -18,17 +17,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auth APIs
 export const register = (data) => api.post('/auth/register', data);
 export const login = (data) => api.post('/auth/login', data);
 
-// PDF APIs
 export const uploadPdf = (formData) => {
   return api.post('/pdf/upload', formData, {
-    headers: { 'Content-Type': undefined }
+    headers: { 'Content-Type': 'multipart/form-data' }
   });
 };
 
 export const searchPdfs = (params) => api.get('/pdf/search', { params });
+export const getPdfById = (id) => api.get(`/pdf/${id}`);
+export const updatePdf = (id, data) => api.put(`/pdf/${id}`, data);
+export const deletePdf = (id) => api.delete(`/pdf/${id}`);
 
 export default api;

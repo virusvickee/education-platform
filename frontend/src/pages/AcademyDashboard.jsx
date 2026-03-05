@@ -1,37 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
-import { uploadPdf } from '../services/api';
+import AcademyPdfCard from '../components/AcademyPdfCard';
+import EditModal from '../components/EditModal';
+import ConfirmModal from '../components/ConfirmModal';
 import Loader from '../components/Loader';
+import { uploadPdf, searchPdfs, updatePdf, deletePdf } from '../services/api';
 
 const AcademyDashboard = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ subject: '', className: '', school: '' });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [dragActive, setDragActive] = useState(false);
+  const [pdfs, setPdfs] = useState([]);
+  const [loadingPdfs, setLoadingPdfs] = useState(false);
+  const [editModal, setEditModal] = useState({ isOpen: false, pdf: null });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, pdf: null });
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const validateFile = (file) => {
-    if (!file) return 'Please select a file';
-    if (file.type !== 'application/pdf') return 'Only PDF files are allowed';
-    if (file.size > 10 * 1024 * 1024) return 'File size must be less than 10MB';
-    return null;
+  useEffect(() => {
+    fetchMyPdfs();
+  }, []);
+
+  const fetchMyPdfs = async () => {
+    setLoadingPdfs(true);
+    try {
+      const { data } = await searchPdfs({});
+      const user = JSON.parse(localStorage.getItem('user'));
+      const myPdfs = data.data.filter(pdf => pdf.uploadedBy._id === user._id);
+      setPdfs(myPdfs);
+    } catch (err) {
+      toast.error('Failed to load PDFs');
+    } finally {
+      setLoadingPdfs(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    const fileError = validateFile(file);
-    if (fileError) {
-      setError(fileError);
+    if (!file) {
+      toast.error('Please select a PDF file');
       return;
     }
 
     setLoading(true);
-
     try {
       const data = new FormData();
       data.append('pdf', file);
@@ -40,196 +54,172 @@ const AcademyDashboard = () => {
       data.append('school', formData.school);
 
       await uploadPdf(data);
-      setSuccess('PDF uploaded successfully!');
+      toast.success('PDF uploaded successfully!');
       setFormData({ subject: '', className: '', school: '' });
       setFile(null);
-      
-      const input = document.getElementById('pdf-input');
-      if (input) input.value = '';
+      document.getElementById('pdf-input').value = '';
+      fetchMyPdfs();
     } catch (err) {
-      setError(err.response?.data?.message || 'Upload failed');
+      toast.error(err.response?.data?.message || 'Upload failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
+  const handleEdit = async (updatedData) => {
+    setActionLoading(true);
+    try {
+      await updatePdf(editModal.pdf._id, updatedData);
+      toast.success('PDF updated successfully!');
+      setEditModal({ isOpen: false, pdf: null });
+      fetchMyPdfs();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Update failed');
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      const fileError = validateFile(droppedFile);
-      if (fileError) {
-        setError(fileError);
-      } else {
-        setFile(droppedFile);
-        setError('');
-      }
+  const handleDelete = async () => {
+    setActionLoading(true);
+    try {
+      await deletePdf(deleteModal.pdf._id);
+      toast.success('PDF deleted successfully!');
+      setDeleteModal({ isOpen: false, pdf: null });
+      fetchMyPdfs();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    } finally {
+      setActionLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.success('Logged out successfully');
+    navigate('/login');
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="flex">
+      <Navbar onLogout={handleLogout} />
+      <div className="flex flex-col md:flex-row">
         <Sidebar role="academy" />
         
-        <main className="flex-1 p-8">
-          <div className="max-w-3xl mx-auto">
+        <main className="flex-1 p-4 md:p-8">
+          <div className="max-w-7xl mx-auto">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-800">Upload PDF</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Upload PDF</h2>
               <p className="text-gray-600 mt-2">Share educational materials with students</p>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8 mb-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <div role="alert" className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                    {error}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="e.g., Mathematics"
+                    />
                   </div>
-                )}
-
-                {success && (
-                  <div role="alert" className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
-                    {success}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.className}
+                      onChange={(e) => setFormData({ ...formData, className: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="e.g., Grade 10"
+                    />
                   </div>
-                )}
-
-                <div>
-                  <label htmlFor="subject-input" className="block text-sm font-medium text-gray-700 mb-2">
-                    Subject Name
-                  </label>
-                  <input
-                    id="subject-input"
-                    type="text"
-                    required
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    placeholder="e.g., Mathematics"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">School</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.school}
+                      onChange={(e) => setFormData({ ...formData, school: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="e.g., ABC School"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="className-input" className="block text-sm font-medium text-gray-700 mb-2">
-                    Class Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">PDF File</label>
                   <input
-                    id="className-input"
-                    type="text"
+                    id="pdf-input"
+                    type="file"
+                    accept=".pdf"
                     required
-                    value={formData.className}
-                    onChange={(e) => setFormData({ ...formData, className: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    placeholder="e.g., Grade 10"
+                    onChange={(e) => setFile(e.target.files[0])}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
-                </div>
-
-                <div>
-                  <label htmlFor="school-input" className="block text-sm font-medium text-gray-700 mb-2">
-                    School Name
-                  </label>
-                  <input
-                    id="school-input"
-                    type="text"
-                    required
-                    value={formData.school}
-                    onChange={(e) => setFormData({ ...formData, school: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    placeholder="e.g., ABC High School"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload PDF File
-                  </label>
-                  <div 
-                    className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-colors ${
-                      dragActive ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-indigo-400'
-                    }`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                  >
-                    <div className="space-y-1 text-center">
-                      <svg
-                        className="mx-auto h-12 w-12 text-gray-400"
-                        stroke="currentColor"
-                        fill="none"
-                        viewBox="0 0 48 48"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <div className="flex text-sm text-gray-600">
-                        <label htmlFor="pdf-input" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
-                          <span>Upload a file</span>
-                          <input
-                            id="pdf-input"
-                            type="file"
-                            accept=".pdf,application/pdf"
-                            required
-                            onChange={(e) => {
-                              const selectedFile = e.target.files[0];
-                              if (selectedFile) {
-                                const fileError = validateFile(selectedFile);
-                                if (fileError) {
-                                  setError(fileError);
-                                  e.target.value = '';
-                                } else {
-                                  setFile(selectedFile);
-                                  setError('');
-                                }
-                              }
-                            }}
-                            className="sr-only"
-                          />
-                        </label>
-                        <p className="pl-1">or drag and drop</p>
-                      </div>
-                      <p className="text-xs text-gray-500">PDF up to 10MB</p>
-                      {file && (
-                        <p className="text-sm text-indigo-600 font-medium mt-2">
-                          Selected: {file.name}
-                        </p>
-                      )}
-                    </div>
-                  </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  aria-busy={loading}
-                  aria-disabled={loading}
-                  className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
                 >
-                  {loading ? <Loader /> : <><span aria-hidden="true">📤</span> Upload PDF</>}
+                  {loading ? <Loader /> : '📤 Upload PDF'}
                 </button>
               </form>
             </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800">My Uploaded PDFs</h3>
+            </div>
+
+            {loadingPdfs ? (
+              <div className="flex justify-center py-12">
+                <Loader />
+              </div>
+            ) : pdfs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pdfs.map((pdf) => (
+                  <AcademyPdfCard
+                    key={pdf._id}
+                    pdf={pdf}
+                    onEdit={(pdf) => setEditModal({ isOpen: true, pdf })}
+                    onDelete={(pdf) => setDeleteModal({ isOpen: true, pdf })}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+                <div className="text-gray-400 text-6xl mb-4">📚</div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">No PDFs uploaded yet</h3>
+                <p className="text-gray-600">Upload your first PDF to get started</p>
+              </div>
+            )}
           </div>
         </main>
       </div>
+
+      <EditModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, pdf: null })}
+        onSave={handleEdit}
+        pdf={editModal.pdf}
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, pdf: null })}
+        onConfirm={handleDelete}
+        title="Delete PDF"
+        message="Are you sure you want to delete this PDF? This action cannot be undone."
+        loading={actionLoading}
+      />
     </div>
   );
 };

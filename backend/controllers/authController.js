@@ -1,21 +1,14 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-// Generate JWT token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d'
-  });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
-// @desc    Register user
-// @route   POST /api/auth/register
-// @access  Public
 export const register = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    // Validate required fields
     if (!email || !password || !role) {
       return res.status(400).json({ 
         success: false, 
@@ -23,7 +16,21 @@ export const register = async (req, res) => {
       });
     }
 
-    // Validate role
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide a valid email address' 
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Password must be at least 6 characters long' 
+      });
+    }
+
     if (!['academy', 'student'].includes(role)) {
       return res.status(400).json({ 
         success: false, 
@@ -31,7 +38,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ 
@@ -40,7 +46,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // Create user
     const user = await User.create({ email, password, role });
 
     res.status(201).json({
@@ -58,14 +63,10 @@ export const register = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate required fields
     if (!email || !password) {
       return res.status(400).json({ 
         success: false, 
@@ -73,7 +74,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ 
@@ -82,7 +82,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({ 
